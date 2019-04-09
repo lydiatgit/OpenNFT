@@ -26,7 +26,6 @@ function setupProcParams()
 % TH values could depend on the data acquisition setup, and could evtl. be
 % set as mean(SPM.xM.TH)*ones(size(SPM.xM.TH)), or zeros(size(SPM.xM.TH)) 
 % given masking threshold defined in SPM batch. 
-% the whole study, for simplicity, keeping in mind their potential 
 % The iGLM estimations are used for visualizations, however, note that
 % negligible variations are possible in dynamic ROI update schemes or
 % feedback estimations based on iGLM. 
@@ -38,7 +37,7 @@ function setupProcParams()
 % An end-user needs to set and justify their own parameter
 % files and contrasts.
 %__________________________________________________________________________
-% Copyright (C) 2016-2019 OpenNFT.org
+% Copyright (C) 2016-2017 OpenNFT.org
 %
 % Written by Yury Koush
 
@@ -112,28 +111,6 @@ mainLoopData.firstNF = 0;
 if isDCM
     % This is to simplify the P.Protocol parameter listings for DCM,
     % in scans
-% %     %     TR = 1.093;
-% % %     P.lengthDCMTrial = floor(120*TR);
-% % %     P.lengthDCMPeriod = floor(186*TR); % P.lengthDCMTrial + P.nrDisplayScans + P.nrBlankScans
-% % %     P.beginDCMblock = [1:floor(186*TR):floor(1302*TR)]; %end: P.lengthDCMPeriod x P.nrNFtrials
-% % %     P.endDCMblock = [floor(120*TR):floor(186*TR):floor(1302*TR)];
-% % %     P.indNFTrial = 0;
-% % %     P.nrNFtrials = 7;
-% % %     P.nrDisplayScans = floor(5*TR); % feedback display duration in scans
-% % %     P.nrBlankScans = floor(61*TR);  % DCM estiation duration in scans
-% % %     P.dcmRemoveInterval = P.nrBlankScans + P.nrDisplayScans;
-% % 
-% % %     P.lengthDCMTrial = 120;
-% % %     P.lengthDCMPeriod = 186; % P.lengthDCMTrial + P.nrDisplayScans + P.nrBlankScans
-% % %     P.beginDCMblock = [1:186:1302]; %end: P.lengthDCMPeriod x P.nrNFtrials
-% % %     P.endDCMblock = [120:186:1302];
-% % %     P.indNFTrial = 0;
-% % %     P.nrNFtrials = 7;
-% % %     P.nrDisplayScans = 5; % feedback display duration in scans
-% % %     P.nrBlankScans = 31;  % DCM estiation duration in scans
-% % %     P.dcmRemoveInterval = P.nrBlankScans + P.nrDisplayScans;
-    
-    %%% ORIG %%%
     P.lengthDCMTrial = 108;
     P.lengthDCMPeriod = 150;
     P.beginDCMblock = [1:150:1050];
@@ -187,8 +164,8 @@ P.isHighPass = true;
 P.isLinRegr = true;
 P.linRegr = zscore((1:double(P.NrOfVolumes-P.nrSkipVol))');
 
-SPM = setupSPM(P);
-
+%% Loas SPM file and set parameters for iGLM & cGLM corrections
+load(P.SPMFile);
 if ~P.iglmAR1
     % exclude constant regressor
     mainLoopData.basFct = SPM.xX.X(:,1:end-1);
@@ -206,13 +183,13 @@ mainLoopData.statMap3D_iGLM = [];
 if isPSC && strcmp(P.Prot, 'Cont') && ~fIMAPH
     tmpSpmDesign = SPM.xX.X(1:P.NrOfVolumes-P.nrSkipVol, 2);
     % this contrast does not count constant term
-    mainLoopData.tContr = strcmp(P.CondNames,P.CondName)';
+    mainLoopData.tContr = [0; 1; 0];
 end
 
 if isPSC && strcmp(P.Prot, 'Inter') && ~fIMAPH
     tmpSpmDesign = SPM.xX.X(1:P.NrOfVolumes-P.nrSkipVol, 2);
     % this contrast does not count constant term
-    mainLoopData.tContr = strcmp(P.CondNames,P.CondName)';
+    mainLoopData.tContr = [0; 1; 0];
 end
 
 % PSC (Phillips)
@@ -224,24 +201,30 @@ end
 
 % DCM
 if isDCM && strcmp(P.Prot, 'InterBlock')
+    tmpSpmDesign = SPM.xX.X(1:P.lengthDCMTrial,1);
     % this contrast does not count constant term
-    tmpSpmDesign = SPM.xX.X(1:P.lengthDCMTrial,2);
-    mainLoopData.tContr = [-1; 1];
+    mainLoopData.tContr = [1; -1];
     [mainLoopData.DCM_EN, mainLoopData.dcmParTag, ...
         mainLoopData.dcmParOpp] = dcmPrep(SPM);
 end
 
 % SVM
 if isSVM && strcmp(P.Prot, 'Cont')
-    mainLoopData.basFct = mainLoopData.basFct(:,2);
-    mainLoopData.nrBasFct = 1;
     % this contrast does not count constant term
-    tmpSpmDesign = SPM.xX.X(1:P.NrOfVolumes-P.nrSkipVol,strcmp(P.CondNames,P.CondName));
+    tmpSpmDesign = SPM.xX.X(1:P.NrOfVolumes-P.nrSkipVol,1);
     mainLoopData.tContr = [1];
 end
 
-%% High-pass filter for iGLM given by SPM
-mainLoopData.K = SPM.xX.K;
+%% High-pass filter for iGLM
+K.HParam = 128;
+K.RT = SPM.xY.RT;
+k    = SPM.nscan;
+n    = fix(2*(k*K.RT)/K.HParam + 1);
+X0   = spm_dctmtx(k,n);
+K.X0 = X0(:,2:end);
+% or, if given by SPM
+% mainLoopData.K = SPM.xX.K;
+mainLoopData.K = K;
 
 clear SPM
 

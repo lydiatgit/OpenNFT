@@ -38,6 +38,7 @@ def timeit(message):
     print(message + ' {:.2f} {}'.format(to, units))
 
 
+# ==============================================================================
 def generate_random_number_string(num=5):
     """Generates a sequence of numbers and returns it as string
     """

@@ -8,10 +8,9 @@ function displayFeedback(displayData)
 % End-user is adviced to configure the use of PTB on their own workstation
 % and justify more advanced configuration for PTB.
 %__________________________________________________________________________
-% Copyright (C) 2016-2019 OpenNFT.org
+% Copyright (C) 2016-2017 OpenNFT.org
 %
 % Written by Yury Koush, Artem Nikonorov
-% Adapted by Lydia Hellrung for Testing 2018-07-23
 
 tDispl = tic;
 
@@ -27,63 +26,41 @@ if ~strcmp(feedbackType, 'DCM')
     instrColor = [200, 200, 200];
 end
 
-switch feedbackType
+switch feedbackType    
     %% Continuous PSC
     case 'bar_count'
-        dispValue  = dispValue*(floor(P.Screen.h/2)-floor(P.Screen.h/10))/100;
+        dispValue  = dispValue*(P.Screen.h/2-P.Screen.h/10)/100;
         switch condition
             case 1 % Baseline
                 % Text "COUNT"
-                Screen('TextSize', P.Screen.wPtr , floor(P.Screen.h/10));
-                Screen('DrawText', P.Screen.wPtr, 'REST', ...
-                    floor(P.Screen.w/2-P.Screen.h/4), ...
-                    floor(P.Screen.h-P.Screen.h/5), instrColor);
+                Screen('TextSize', P.Screen.wPtr , P.Screen.h/10);
+                Screen('DrawText', P.Screen.wPtr, 'COUNT', ...
+                    P.Screen.w/2-P.Screen.h/4, ...
+                    P.Screen.h/2-P.Screen.h/10, instrColor);
+            case 2 % Regualtion
                 % Fixation Point
                 Screen('FillOval', P.Screen.wPtr, [255 255 255], ...
-                    [floor(P.Screen.w/2-P.Screen.w/200), ...
-                    floor(P.Screen.h/2-P.Screen.w/200), ...
-                    floor(P.Screen.w/2+P.Screen.w/200), ...
-                    floor(P.Screen.h/2+P.Screen.w/200)]);
+                    [P.Screen.w/2-P.Screen.w/200, ...
+                    P.Screen.h/2-P.Screen.w/200, ...
+                    P.Screen.w/2+P.Screen.w/200, ...
+                    P.Screen.h/2+P.Screen.w/200]);
                 % draw target bar
                 Screen('DrawLines', P.Screen.wPtr, ...
-                    [floor(P.Screen.w/2-P.Screen.w/20), ...
-                    floor(P.Screen.w/2+P.Screen.w/20); ...
-                    floor(P.Screen.h/10), floor(P.Screen.h/10)], ...
-                    P.Screen.lw, [0 255 0]);
+                    [P.Screen.w/2-P.Screen.w/20, ...
+                    P.Screen.w/2+P.Screen.w/20; ...
+                    P.Screen.h/10, P.Screen.h/10], ...
+                    P.Screen.lw, [255 0 0]);
                 % draw activity bar
                 Screen('DrawLines', P.Screen.wPtr, ...
-                    [floor(P.Screen.w/2-P.Screen.w/20), ...
-                    floor(P.Screen.w/2+P.Screen.w/20); ...
-                    floor(P.Screen.h/2)-dispValue, ...
-                    floor(P.Screen.h/2)-dispValue], P.Screen.lw, [0 255 0]);
-            case 2 % Regulation
-                % Fixation Point
-                Screen('FillOval', P.Screen.wPtr, [255 255 255], ...
-                    [floor(P.Screen.w/2-P.Screen.w/200), ...
-                    floor(P.Screen.h/2-P.Screen.w/200), ...
-                    floor(P.Screen.w/2+P.Screen.w/200), ...
-                    floor(P.Screen.h/2+P.Screen.w/200)]);
-                % draw target bar
-                Screen('DrawLines', P.Screen.wPtr, ...
-                    [floor(P.Screen.w/2-P.Screen.w/20), ...
-                    floor(P.Screen.w/2+P.Screen.w/20); ...
-                    floor(P.Screen.h/10), floor(P.Screen.h/10)], ...
-                    P.Screen.lw, [0 255 0]);
-                % draw activity bar
-                Screen('DrawLines', P.Screen.wPtr, ...
-                    [floor(P.Screen.w/2-P.Screen.w/20), ...
-                    floor(P.Screen.w/2+P.Screen.w/20); ...
-                    floor(P.Screen.h/2)-dispValue, ...
-                    floor(P.Screen.h/2)-dispValue], P.Screen.lw, [0 255 0]);
-                Screen('TextSize', P.Screen.wPtr , floor(P.Screen.h/10));
-                Screen('DrawText', P.Screen.wPtr, 'MOVE FINGER', ...
-                    floor(P.Screen.w/2-P.Screen.h/4), ...
-                    floor(P.Screen.h-P.Screen.h/5), instrColor);
+                    [P.Screen.w/2-P.Screen.w/20, ...
+                    P.Screen.w/2+P.Screen.w/20; ...
+                    P.Screen.h/2-dispValue, ...
+                    P.Screen.h/2-dispValue], P.Screen.lw, [0 255 0]);
         end
         P.Screen.vbl = Screen('Flip', P.Screen.wPtr, ...
             P.Screen.vbl + P.Screen.ifi/2);
         
-        %% Intermittent PSC
+    %% Intermittent PSC
     case 'value_fixation'
         switch condition
             case 1  % Baseline
@@ -141,20 +118,20 @@ switch feedbackType
                     P.Screen.vbl + P.Screen.ifi/2);
         end
         
-        %% Trial-based DCM
+    %% Trial-based DCM
     case 'DCM'
         nrP = P.nrP;
         nrN = P.nrN;
         imgPNr = P.imgPNr;
         imgNNr = P.imgNNr;
-        switch condition
+        switch condition           
             case 1 % Neutral textures
                 % Define texture
                 nrP = 0;
                 nrN = nrN + 1;
                 if (nrN == 1) || (nrN == 5) || (nrN == 9)
                     imgNNr = imgNNr + 1;
-                    disp(['REST:' mat2str(imgNNr)]);
+                    disp(['Neut Pict:' mat2str(imgNNr)]);
                 end
                 if nrN < 5
                     basImage = P.texN(imgNNr);
@@ -166,15 +143,15 @@ switch feedbackType
                 % Draw Texture
                 Screen('DrawTexture', P.Screen.wPtr, basImage);
                 P.Screen.vbl=Screen('Flip', P.Screen.wPtr, ...
-                    P.Screen.vbl+floor(P.Screen.ifi/2));
-                
+                    P.Screen.vbl+P.Screen.ifi/2);
+
             case 2 % Positive textures
                 % Define texture
                 nrN = 0;
                 nrP = nrP + 1;
                 if (nrP == 1) || (nrP == 5) || (nrP == 9)
                     imgPNr = imgPNr + 1;
-                    disp(['MOVE:' mat2str(imgPNr)]);
+                    disp(['Posit Pict:' mat2str(imgPNr)]);
                 end
                 if nrP < 5
                     dispImage = P.texP(imgPNr);
@@ -187,11 +164,11 @@ switch feedbackType
                 Screen('DrawTexture', P.Screen.wPtr, dispImage);
                 P.Screen.vbl=Screen('Flip', P.Screen.wPtr, ...
                     P.Screen.vbl+P.Screen.ifi/2);
-                
+
             case 3 % Rest epoch
                 % Black screen case is called seaprately in Python to allow
                 % using PTB Matlab Helper process for DCM model estimations
-                
+
             case 4 % NF display
                 nrP = 0;
                 nrN = 0;
@@ -203,24 +180,24 @@ switch feedbackType
                 end
                 % instruction reminder
                 Screen('DrawText', P.Screen.wPtr, 'UP', ...
-                    floor(P.Screen.w/2 - P.Screen.w/15), ...
-                    floor(P.Screen.h/2 - P.Screen.w/8), [255, 0, 0]);
+                    P.Screen.w/2 - P.Screen.w/15, ...
+                    P.Screen.h/2 - P.Screen.w/8, [255, 0, 0]);
                 % feedback value
                 Screen('DrawText', P.Screen.wPtr, ...
                     ['(' mat2str(dispValue) ')'], ...
-                    floor(P.Screen.w/2 - P.Screen.w/7), ...
-                    floor(P.Screen.h/2 + P.Screen.w/200), dispColor);
+                    P.Screen.w/2 - P.Screen.w/7, ...
+                    P.Screen.h/2 + P.Screen.w/200, dispColor);
                 % monetary reward value
                 Screen('DrawText', P.Screen.wPtr, ['+' Reward 'CHF'], ...
-                    floor(P.Screen.w/2 - P.Screen.w/7), ...
-                    floor(P.Screen.h/2 + P.Screen.w/7), dispColor);
+                    P.Screen.w/2 - P.Screen.w/7, ...
+                    P.Screen.h/2 + P.Screen.w/7, dispColor);
                 P.Screen.vbl=Screen('Flip', P.Screen.wPtr, ...
-                    P.Screen.vbl + floor(P.Screen.ifi/2));
+                    P.Screen.vbl + P.Screen.ifi/2);
                 % basic flickering given TR
                 if 1
                     pause(randi([600,800])/1000);
                     P.Screen.vbl=Screen('Flip', P.Screen.wPtr, ...
-                        P.Screen.vbl + floor(P.Screen.ifi/2));
+                        P.Screen.vbl + P.Screen.ifi/2);
                 end
         end
         P.nrP = nrP;

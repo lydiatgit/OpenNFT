@@ -8,6 +8,18 @@ __pycache__/
 *$py.class
 *.so
 
+###########
+# RTHeroes stuff to ignore
+##########
+matlab_DOPANF_playground/
+matlab_TemplateExperiment/
+OpenNFT_venv
+ptbscreen_*.py
+mlproc_*.py
+config_*.py
+OpenNFT_*.py
+
+
 # Distribution / packaging
 .Python
 env/
@@ -17,7 +29,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+
 lib64/
 parts/
 sdist/
@@ -51,8 +63,6 @@ docs/build/
 # PyCharm
 .idea/
 
-# VSCode
-.vscode/
 
 ###########
 # Matlab
@@ -60,8 +70,8 @@ docs/build/
 *.asv
 matlab/Estimated_*.mat
 matlab/Ind_DCM_*.mat
-OpenNFT_venv/Scripts/Activate.ps1
-OpenNFT_venv/Scripts/activate.bat
-OpenNFT_venv/Scripts/deactivate.bat
-OpenNFT_venv/pyvenv.cfg
 *.mat
+
+matlab/\.DS_Store
+
+matlab/preproc/

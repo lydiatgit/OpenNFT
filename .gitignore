@@ -17,7 +17,7 @@ ptbscreen_*.py
 mlproc_*.py
 config_*.py
 OpenNFT_*.py
-
+.DS_STORE
 
 # Distribution / packaging
 .Python

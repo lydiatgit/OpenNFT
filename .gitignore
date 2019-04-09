@@ -13,7 +13,6 @@ __pycache__/
 ##########
 matlab_DOPANF_playground/
 matlab_TemplateExperiment/
-OpenNFT_venv
 ptbscreen_*.py
 mlproc_*.py
 config_*.py

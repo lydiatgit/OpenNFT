@@ -31,7 +31,7 @@ condition = mainLoopData.condition;
 [isPSC, isDCM, isSVM, isIGLM] = getFlagsType(P);
 
 %% Continuous PSC NF
-if isPSC && strcmp(P.Prot, 'Cont')
+if isPSC && (strcmp(P.Prot, 'Cont') || strcmp(P.Prot, 'ContTask'))
     blockNF = mainLoopData.blockNF;
     firstNF = mainLoopData.firstNF;
 
@@ -146,7 +146,7 @@ if isPSC && strcmp(P.Prot, 'Inter')
 
             % [0...P.MaxFeedbackVal], for Display
             if ~P.NegFeedback && dispValue < 0
-                dispValue = 0;
+                dispValue = 1;
             end
             if dispValue > P.MaxFeedbackVal
                 dispValue = P.MaxFeedbackVal;

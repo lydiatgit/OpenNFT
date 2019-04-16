@@ -97,7 +97,7 @@ resolution(displBackgr.mat);
 mmcentre     = mean(strParam.Space*[strParam.maxBB';1 1],2)';
 strParam.centre    = mmcentre(1:3);
 % Display modes: [Background+Stat+ROIs, Background+Stat, Background+ROIs]
-strParam.modeDispl = [0 0 1]; 
+strParam.modeDispl = [0 1 0]; 
 displStat = [];
 if isDCM
     [imgt,imgs,imgc] = redrawall(displBackgr.vol, displBackgr.mat, ...
@@ -266,6 +266,13 @@ if ~isempty(Stat)
         drawimgs = reshape(actc(tmps(:),:)*actp+gryc(imgs(:),:)*(1-actp), ...
                                                            [size(imgs) 3]);
     end
+else
+    if strParam.modeDispl(1) || strParam.modeDispl(2)
+        %% Background 
+        drawimgt = cimgt;
+        drawimgc = cimgc;
+        drawimgs = cimgs;
+    end        
 end
 if strParam.modeDispl(3)
     %% Background + ROIs   

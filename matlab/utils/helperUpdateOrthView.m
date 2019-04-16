@@ -52,7 +52,7 @@ m_in = memmapfile(fname, 'Writable', false, 'Format', ...
 strParam.centre = findcent(newCoord, flagsPlanes);
 % TODO GUI: Display modes: [Background + Stat + ROIs, 
 %                                     Background + Stat, Background + ROIs]
-strParam.modeDispl = [1 0 0]; 
+strParam.modeDispl = [0 1 0]; 
 
 displStat.vol = m_in.Data.statVol; 
 displStat.mat = matTemplMotCorr;
@@ -210,6 +210,13 @@ if ~isempty(Stat)
         drawimgs = reshape(actc(tmps(:),:)*actp+gryc(imgs(:),:)*(1-actp),...
                                                            [size(imgs) 3]);
     end
+else
+    if strParam.modeDispl(1) || strParam.modeDispl(2)
+        %% Background 
+        drawimgt = cimgt;
+        drawimgc = cimgc;
+        drawimgs = cimgs;
+    end          
 end
 if strParam.modeDispl(3)
     %% Background + ROIs   

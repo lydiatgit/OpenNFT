@@ -370,7 +370,10 @@ if ~isempty(idxActVoxIGLM) && max(tn) > 0 % handle empty activation map
     % shared for SPM matlab helper
     m = evalin('base', 'mmStatVol');
     m.Data.statVol = statMap3D;
-    mainLoopData.statMapCreated = 1;    
+    mainLoopData.statMapCreated = 1; 
+else
+    assignin('base', 'strIdx', matData2strData([10,15]'));
+    assignin('base', 'strStatMap', matData2strData([10,15]'));    
 end
 
 %% storage of iGLM results, could be disabled to save time

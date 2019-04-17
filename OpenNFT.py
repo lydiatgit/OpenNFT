@@ -397,7 +397,7 @@ class OpenNFT(QWidget):
 
         self.btnChooseSetFile.clicked.connect(self.onChooseSetFile)
         self.btnChooseSetFile2.clicked.connect(self.onChooseSetFile)
-        self.btnChooseSPMFile.clicked.connect(self.onChooseSPMFile)
+
 
         self.btnChooseProtocolFile.clicked.connect(self.onChooseProtocolFile)
 
@@ -419,6 +419,8 @@ class OpenNFT(QWidget):
             lambda: self.onChooseFolder('WorkFolder', self.leWorkFolder))
         self.btnChooseWatchFolder.clicked.connect(
             lambda: self.onChooseFolder('WatchFolder', self.leWatchFolder))
+        self.btnChooseTaskFolder.clicked.connect(
+            lambda: self.onChooseFolder('TaskFolder', self.leTaskFolder))
 
         self.btnStart.setEnabled(False)
 
@@ -511,11 +513,13 @@ class OpenNFT(QWidget):
 
     # --------------------------------------------------------------------------
     def initMainLoopData(self):
+        print('initiating mainloopdata')
         # Data types
         self.mainLoopData['DataType'] = self.cbDataType.currentText()
+#        self.mainLoopData['taskseq'] = 0
 
         self.eng.workspace['mainLoopData'] = self.mainLoopData
-
+               
         self.eng.setupProcParams(nargout=0)
 
         with utils.timeit("Receiving 'P' from Matlab:"):
@@ -619,6 +623,7 @@ class OpenNFT(QWidget):
             self.eng.mainLoopEntry(self.iteration, nargout=0)
 
             self.displayData = self.eng.initDispalyData(self.iteration)
+            
 
             #t6, display instruction prior to data acquisition
             self.recorder.recordEvent(Times.t6, self.iteration)
@@ -813,9 +818,28 @@ class OpenNFT(QWidget):
             if self.P['Prot'] != 'Inter':
                 if config.USE_PTB:
                     if self.displayData:
-                        self.displayData['displayStage'] = 'feedback'
-                        self.displayScreen()
-
+                        if self.P['Prot'] == 'ContTask':
+    #                       Here task condition is evaluated: if condition is 3 (task) and the current
+    #                       itteration corresponds with the onset of a task block (kept in TaskFirstVol)
+    #                       taskseq is set to one. While set to 1, Display  in ptbScreen.py 
+    #                       will use the taskse flag to call the ptbTask function.
+                            cond = self.eng.evalin('base', 'mainLoopData.displayData.condition')
+                            if cond == 3 and int(self.P['TaskFirstVol'][0][self.iteration-1]) == 1:
+                                self.displayData['taskseq'] = 1   
+                                self.displayScreen()
+#                               i'm a bit suspicious of the workings of the threading processes..
+#                               put these lines here to be consistent with DCM logic
+                                QApplication.processEvents()
+                                self.endDisplayEvent.wait()
+                                self.endDisplayEvent.clear()
+                            else:
+                                self.displayData['taskseq'] = 0 
+                                self.displayData['displayStage'] = 'feedback'
+                                self.displayScreen()
+                        else:
+                            self.displayData['taskseq'] = 0
+                            self.displayData['displayStage'] = 'feedback'
+                            self.displayScreen()
         # main logic end
 
         init = self.iteration == (self.P['nrSkipVol'] + 1)
@@ -1115,6 +1139,8 @@ class OpenNFT(QWidget):
                     ptbP['WorkFolder'] = self.P['WorkFolder']
                     ptbP['DisplayFeedbackFullscreen'] = self.P['DisplayFeedbackFullscreen']
                     ptbP['Prot'] = self.P['Prot']
+                    if self.P['Prot'] == 'ContTask':
+                        ptbP['TaskFolder'] = self.P['TaskFolder']
 
                     self.ptbScreen.initialize(
                         sid, self.P['WorkFolder'], self.P['Prot'], ptbP)
@@ -1298,21 +1324,6 @@ class OpenNFT(QWidget):
             self.leMCTempl.setText(fname)
             self.P['MCTempl'] = fname
 
-    def onChooseSPMFile(self):
-        if config.DONOT_USE_QFILE_NATIVE_DIALOG:
-            fname = QFileDialog.getOpenFileName(
-                self, "Select SPM File", config.ROOT_PATH, 'MAT files (*.mat)', options=QFileDialog.DontUseNativeDialog)[0]
-        else:
-            fname = QFileDialog.getOpenFileName(
-                self, "Select SPM File", config.ROOT_PATH, 'MAT files (*.mat)')[0]
-
-        fname = fname.replace('/', os.path.sep)
-        if fname:
-            self.leSPMFile.setText(fname)
-            self.P['SPMFile'] = fname
-
-
-
     # --------------------------------------------------------------------------
     def onChooseFolder(self, name, le):
         dname = QFileDialog.getExistingDirectory(
@@ -1378,10 +1389,13 @@ class OpenNFT(QWidget):
             self.leRoiAnatFolder.setText(self.settings.value('RoiAnatFolder', ''))
         else:
             self.leRoiAnatFolder.setText(self.settings.value('RoiFilesFolder', ''))
+        self.leRoiAnatOperation.setText(self.settings.value('RoiAnatOperation', ''))
         self.leRoiGroupFolder.setText(self.settings.value('RoiGroupFolder', ''))
         self.leAnatBgFolder.setText(self.settings.value('AnatBgFolder', ''))
-        self.leSPMFile.setText(self.settings.value('SPMFile', ''))
+				  
         self.leMCTempl.setText(self.settings.value('MCTempl', ''))
+        if (self.settings.value('Prot', '')) == 'ContTask':
+            self.leTaskFolder.setText(self.settings.value('TaskFolder', ''))
 
         # --- middle ---
         self.leProjName.setText(self.settings.value('ProjectName', ''))
@@ -1437,7 +1451,7 @@ class OpenNFT(QWidget):
         self.sbTargDIAM.setValue(float(self.settings.value('TargDIAM', 0.0)))
         self.leWeightsFile.setText(str(self.settings.value('WeightsFileName', '')))
 
-        self.cbDisplayFeedback.setChecked(ast.literal_eval(str(self.settings.value('DisplayFeedback', 'True')).title()))
+																									
 
         self.actualize
 
@@ -1482,10 +1496,12 @@ class OpenNFT(QWidget):
             self.P['RoiAnatFolder'] = self.leRoiAnatFolder.text()
         else:
             self.P['RoiFilesFolder'] = self.leRoiAnatFolder.text()
+            
         self.P['RoiAnatOperation'] = self.leRoiAnatOperation.text()        
         self.P['RoiGroupFolder'] = self.leRoiGroupFolder.text()
         self.P['AnatBgFolder'] = self.leAnatBgFolder.text()
         self.P['MCTempl'] = self.leMCTempl.text()
+
 
         # --- middle ---
         self.P['ProjectName'] = self.leProjName.text()
@@ -1507,7 +1523,10 @@ class OpenNFT(QWidget):
         self.P['DataType'] = str(self.cbDataType.currentText())
         self.P['Prot'] = str(self.cbProt.currentText())
         self.P['Type'] = str(self.cbType.currentText())
-
+        
+        if self.P['Prot'] == 'ContTask':
+            self.P['TaskFolder'] = self.leTaskFolder.text()
+        
         self.P['MaxFeedbackVal'] = float( self.leMaxFeedbackVal.text())
         self.P['FeedbackValDec'] = self.sbFeedbackValDec.value()
         self.P['NegFeedback'] = self.cbNegFeedback.isChecked()
@@ -1562,10 +1581,14 @@ class OpenNFT(QWidget):
             self.settings.setValue('RoiAnatFolder', self.P['RoiAnatFolder'])
         else:
             self.settings.setValue('RoiFilesFolder', self.P['RoiFilesFolder'])
+        self.settings.setValue('RoiAnatOperation', self.P['RoiAnatOperation'])        
         self.settings.setValue('RoiGroupFolder', self.P['RoiGroupFolder'])
         self.settings.setValue('AnatBgFolder', self.P['AnatBgFolder'])
-        self.settings.setValue('SPMFile', self.P['SPMFile'])
+			   
         self.settings.setValue('MCTempl', self.P['MCTempl'])
+        
+        if self.P['Prot'] == 'ContTask':
+            self.settings.setValue('TaskFolder', self.P['TaskFolder'])
 
         # --- middle ---
         self.settings.setValue('ProjectName', self.P['ProjectName'])

@@ -17,6 +17,9 @@ ptbscreen_*.py
 mlproc_*.py
 config_*.py
 OpenNFT_*.py
+OpenNFT_venv_updated/
+matlab_test_after_merge/
+matlab_dcm_motor_test_updated/
 .DS_STORE
 
 # Distribution / packaging

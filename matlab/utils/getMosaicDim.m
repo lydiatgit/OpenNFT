@@ -28,4 +28,4 @@ elseif tmpDim < 0
     slNrImg2DdimY = slNrImg2DdimX;
 end   
 img2DdimX = slNrImg2DdimX * dim3D(1);
-img2DdimY = slNrImg2DdimY * dim3D(1);  
+img2DdimY = slNrImg2DdimY * dim3D(2);  

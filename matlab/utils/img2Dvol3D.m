@@ -22,7 +22,7 @@ for sy  = 0:slNrImg2DdimY-1
     for sx = 0:slNrImg2DdimX-1
         sl = sl+1;
         if sl>dim3D(3), break, else
-            vol3D(:,:,sl)= img2D(sy * dim3D(1) + 1:(sy+1) * dim3D(1), ...
+            vol3D(:,:,sl)= img2D(sy * dim3D(2) + 1:(sy+1) * dim3D(2), ...
                                  sx * dim3D(1) + 1:(sx+1) * dim3D(1));
         end
         vol3D(:,:,sl) = rot90(vol3D(:,:,sl),3);

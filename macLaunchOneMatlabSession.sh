@@ -5,7 +5,8 @@ fi
 
 SESS_NAME=$1
 echo $SESS_NAME
-MATLAB_PATH=$(find /Applications -type d -maxdepth 1 -name "MATLAB*")
+MATLAB_PATH=$(find /Applications -type d -maxdepth 1 -name "MATLAB*" | head -n 1)
 
+echo $MATLAB_PATH/bin/matlab
 $MATLAB_PATH/bin/matlab -nodesktop -r "addpath /Applications/matlab_functions;matlab.engine.shareEngine('$SESS_NAME')"
 

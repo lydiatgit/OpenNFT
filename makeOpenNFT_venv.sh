@@ -9,7 +9,9 @@ python -m venv $VENVNAME
 
 source $VENVNAME/bin/activate
 
-cd /Applications/MATLAB_R2017b.app/extern/engines/python
+MATLAB_PATH=$(find /Applications -type d -maxdepth 1 -name "MATLAB*" | head -n 1)
+
+cd $MATLAB_PATH/extern/engines/python
 python setup.py install
 
 cd $ROOTPATH

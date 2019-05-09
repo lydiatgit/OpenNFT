@@ -13,6 +13,8 @@ source $VENVNAME/bin/activate
 echo "Type in Matlab Version (e.g. MATLAB_R2017b)"
 read MATLAB_PATH
 
+echo "$MATLAB_PATH" > "$VENVNAME/matlab_path.cfg"
+
 cd /Applications/$MATLAB_PATH.app/extern/engines/python
 python3.5 setup.py install || python3.6 setup.py install
 

@@ -18,7 +18,7 @@ mlproc_*.py
 config_*.py
 OpenNFT_*.py
 OpenNFT_venv_updated/
-Open-NFT_venv/
+OpenNFT_venv/
 matlab_test_after_merge/
 matlab_dcm_motor_test_updated/
 .DS_STORE

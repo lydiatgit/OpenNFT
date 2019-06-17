@@ -625,9 +625,10 @@ class OpenNFT(QWidget):
                     if self.iteration > self.P['nrSkipVol'] and config.UDP_SEND_CONDITION:
                         self.udpSender.send_data(self.P['CondNames'][int(self.eng.evalin('base', 'mainLoopData.condition'))-1])
 
-                elif self.P['Type'] == 'DCM':
-                    if not self.isCalculateDcm and config.USE_PTB:
-                        self.displayScreen()
+            elif self.P['Type'] == 'DCM':
+                print("IN ELIF")
+                if not self.isCalculateDcm and config.USE_PTB:
+                    self.displayScreen()
             else:
                 
                 if self.P['Type'] == 'SVM':

@@ -615,26 +615,25 @@ class OpenNFT(QWidget):
             self.displayData = self.eng.initDispalyData(self.iteration)
 
             # display instruction prior to data acquisition for current iteration
-            if self.P['Prot'] == 'Inter':
+            if self.P['Prot'] == 'Inter' or self.P['Prot'] == 'InterBlock':
 
                 if self.P['Type'] == 'PSC':
                     if config.USE_PTB:
-                        self.printToLog('instruction + ' + str(self.iteration))
+                        logger.info('instruction + {}', self.iteration)
                         self.displayScreen()
 
                     if self.iteration > self.P['nrSkipVol'] and config.UDP_SEND_CONDITION:
                         self.udpSender.send_data(self.P['CondNames'][int(self.eng.evalin('base', 'mainLoopData.condition'))-1])
 
-            elif self.P['Type'] == 'DCM':
-                print("IN ELIF")
-                if not self.isCalculateDcm and config.USE_PTB:
-                    self.displayScreen()
+                elif self.P['Type'] == 'DCM':
+                    if not self.isCalculateDcm and config.USE_PTB:
+                        self.displayScreen()
             else:
                 
                 if self.P['Type'] == 'SVM':
                     if self.displayData and config.USE_UDP_FEEDBACK:
-                        self.printToLog('Sending by UDP - instrValue = ') # + str(self.displayData['instrValue'])
-                        #self.udpSender.send_data(self.displayData['instrValue'])
+                        logger.info('Sending by UDP - instrValue = ') # + str(self.displayData['instrValue'])
+#self.udpSender.send_data(self.displayData['instrValue'])
 
         try:
             fname = self.files_queue.get_nowait()
